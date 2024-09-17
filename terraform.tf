@@ -1,4 +1,3 @@
-
 terraform {
   required_providers {
     azurerm = {
@@ -7,15 +6,15 @@ terraform {
     }
   }
 }
- 
+
 provider "azurerm" {
+  features {}
   subscription_id = var.subscription_id
   client_id       = var.client_id
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id 
-  features {}
 }
- 
+
 resource "azurerm_resource_group" "example" {
   name     = "resource-group1"
   location = "Central India"
@@ -68,14 +67,14 @@ resource "azurerm_linux_virtual_machine" "example" {
   ]
   admin_ssh_key {
     username   = "sagarika"
-    public_key = file("/var/lib/jenkins/id_rsa.pub")
+    public_key = file("/home/weblogic/.ssh/id_rsa.pub")
   }
- 
+
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
- 
+
   source_image_reference {
     publisher = "Canonical"
     offer     = "0001-com-ubuntu-server-jammy"
@@ -83,9 +82,23 @@ resource "azurerm_linux_virtual_machine" "example" {
     version   = "latest"
   }
 }
- resource "null_resource" "run_ansible_playbook" {
+resource "null_resource" "run_ansible_playbook" {
   depends_on = [azurerm_linux_virtual_machine.example]
+
+  provisioner "local-exec" {
+    command = <<EOT
+      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${azurerm_public_ip.example.ip_address},' install_nginx.yml --extra-vars='ansible_ssh_user=sagarika' --private-key='/home/weblogic/.ssh/id_rsa' --become --become-user=root
+    EOT
+  }
+}
+
  
+
+
+
+
+
+   
   provisioner "local-exec" {
     command = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${azurerm_public_ip.example.ip_address},' install_nginx.yml --extra-vars='ansible_ssh_user=sagarika' --private-key='/var/lib/jenkins/id_rsa' --become --become-user=root"
   }
