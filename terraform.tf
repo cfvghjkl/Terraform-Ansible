@@ -67,7 +67,7 @@ resource "azurerm_linux_virtual_machine" "example" {
   ]
   admin_ssh_key {
     username   = "sagarika"
-    public_key = file("/home/weblogic/.ssh/id_rsa.pub")
+    public_key = file("/var/lib/jenkins/id_rsa.pub")
   }
 
   os_disk {
@@ -87,7 +87,7 @@ resource "null_resource" "run_ansible_playbook" {
 
   provisioner "local-exec" {
     command = <<EOT
-      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${azurerm_public_ip.example.ip_address},' install_nginx.yml --extra-vars='ansible_ssh_user=sagarika' --private-key='/home/weblogic/.ssh/id_rsa' --become --become-user=root
+      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i '${azurerm_public_ip.example.ip_address},' install_nginx.yml --extra-vars='ansible_ssh_user=sagarika' --private-key='/var/lib/jenkins/id_rsa' --become --become-user=root
     EOT
   }
 }
